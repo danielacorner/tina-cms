@@ -34,8 +34,11 @@ export default ({ data, location }) => {
     setValue(value)
     navigate(`/?${encodeURI(value)}`, { replace: true })
   }
-  const handleBuild = () => {
+  const handlePreview = () => {
     navigate(`/deck-preview?${encodeURI(value)}`)
+  }
+  const handleBuild = () => {
+    console.log("TODO")
   }
 
   return (
@@ -43,6 +46,7 @@ export default ({ data, location }) => {
       <ControlsSection
         setIsLightTheme={setIsLightTheme}
         handleBuild={handleBuild}
+        handlePreview={handlePreview}
       ></ControlsSection>
       <ControlledEditor
         value={value}

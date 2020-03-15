@@ -17,15 +17,22 @@ const ControlsStyles = styled.div`
       color: white;
     }
   }
-  .buildBtn {
+  .btnsWrapper {
     position: fixed;
     bottom: ${CONTROLS_HEIGHT}px;
     right: ${CONTROLS_HEIGHT}px;
     z-index: 999;
+    display: grid;
+    grid-auto-flow: column;
+    grid-gap: 12px;
   }
 `
 
-export default function ControlsSection({ setIsLightTheme, handleBuild }) {
+export default function ControlsSection({
+  setIsLightTheme,
+  handleBuild,
+  handlePreview,
+}) {
   return (
     <ControlsStyles className="controls">
       <div className="themeSwitch">
@@ -33,7 +40,10 @@ export default function ControlsSection({ setIsLightTheme, handleBuild }) {
         <Switch onChange={() => setIsLightTheme(prev => !prev)} />{" "}
         <span className="light">Light</span>
       </div>
-      <div className="buildBtn">
+      <div className="btnsWrapper">
+        <Button variant="contained" color="primary" onClick={handlePreview}>
+          Preview
+        </Button>
         <Button variant="contained" color="primary" onClick={handleBuild}>
           Build
         </Button>
