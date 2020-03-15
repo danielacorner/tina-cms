@@ -10,12 +10,27 @@ module.exports = {
   },
   plugins: [
     {
+      resolve: `gatsby-plugin-prefetch-google-fonts`,
+      options: {
+        fonts: [
+          {
+            family: `Sen`,
+            variants: [`400`, `700`],
+          },
+        ],
+      },
+    },
+    {
       resolve: "gatsby-plugin-tinacms",
       options: {
-        plugins: ["gatsby-tinacms-git", "gatsby-tinacms-remark", "gatsby-tinacms-json",],
+        plugins: [
+          "gatsby-tinacms-git",
+          "gatsby-tinacms-remark",
+          "gatsby-tinacms-json",
+        ],
         sidebar: {
           hidden: process.env.NODE_ENV === "production",
-          position: "displace"
+          position: "displace",
         },
       },
     },

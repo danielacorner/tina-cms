@@ -10,36 +10,9 @@ import ControlsSection from "../components/Controls"
 
 // import qs from "query-string";
 
-const CONTROLS_HEIGHT = 20
 const AppStyles = styled.div`
   * {
     box-sizing: border-box;
-  }
-  .controls {
-    /* position: relative;
-    height: ${CONTROLS_HEIGHT}px;
-    display: flex;
-    padding: 0.5em;
-    align-items: center;
-    justify-content: space-around; */
-  }
-  .buildBtn {
-    position: fixed;
-    bottom: ${CONTROLS_HEIGHT}px;
-    right: ${CONTROLS_HEIGHT}px;
-    z-index: 999;
-  }
-  .themeSwitch {
-    z-index: 999;
-    position: fixed;
-    bottom: ${CONTROLS_HEIGHT}px;
-    left: ${CONTROLS_HEIGHT}px;
-    .dark {
-      color: white;
-    }
-    .light {
-      color: black;
-    }
   }
 `
 
@@ -70,7 +43,7 @@ export default ({ data, location }) => {
     navigate(`/?${encodeURI(value)}`, { replace: true })
   }
   const handleBuild = () => {
-    navigate(`/deck/${encodeURI(value)}`)
+    navigate(`/deck-preview?${encodeURI(value)}`)
   }
 
   return (
