@@ -31,7 +31,8 @@ const ControlsStyles = styled.div`
 export default function ControlsSection({
   setIsLightTheme,
   handleBuild,
-  handlePreview,
+  handleEdit,
+  isEditing,
 }) {
   return (
     <ControlsStyles className="controls">
@@ -41,8 +42,8 @@ export default function ControlsSection({
         <span className="light">Light</span>
       </div>
       <div className="btnsWrapper">
-        <Button variant="contained" color="primary" onClick={handlePreview}>
-          Preview
+        <Button variant="contained" color="primary" onClick={handleEdit}>
+          {isEditing ? "Preview" : "Edit"}
         </Button>
         <Button variant="contained" color="primary" onClick={handleBuild}>
           Build

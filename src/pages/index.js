@@ -3,32 +3,19 @@ import { graphql, navigate } from "gatsby"
 import React, { useState } from "react"
 
 import { ControlledEditor } from "@monaco-editor/react"
-import { useLocalJsonForm, useGlobalJsonForm } from "gatsby-tinacms-json"
+import { useLocalJsonForm } from "gatsby-tinacms-json"
 import ControlsSection from "../components/Controls"
+import Deck from "../components/Deck"
+import { Wysiwyg } from "@tinacms/fields"
+import { TinaField } from "@tinacms/form-builder"
+import { inlineRemarkForm } from "gatsby-tinacms-remark"
 
-// import qs from "query-string";
-
-export default ({ data, location }) => {
-  const [{ author, social }] = useLocalJsonForm(data.author, {
-    label: "Author bio",
-    fields: [
-      { name: "rawJson.author", label: "Author Name", component: "text" },
-
-      {
-        name: "rawJson.social",
-        label: "Social Info",
-        component: "group",
-        fields: [{ label: "@Twitter", name: "twitter", component: "text" }],
-      },
-    ],
-  })
+function HomePage({ data, location, isEditing, setIsEditing }) {
   console.log("⚡🚨: data", data)
   // const parsed = qs.parse(window.location.search);
   // https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/api/hooks.md#uselocation
   // console.log("⚡🚨: parsed", parsed);
   const [value, setValue] = useState(decodeURI(location.search.slice(1))) // slice off the question mark
-  console.log("⚡🚨: location", location)
-  const [isLightTheme, setIsLightTheme] = useState(false)
 
   const handleEditorChange = (ev, value) => {
     setValue(value)
@@ -44,57 +31,53 @@ export default ({ data, location }) => {
   return (
     <>
       <ControlsSection
-        setIsLightTheme={setIsLightTheme}
+        handleEdit={() => setIsEditing(p => !p)}
+        isEditing={isEditing}
         handleBuild={handleBuild}
-        handlePreview={handlePreview}
       ></ControlsSection>
-      <ControlledEditor
-        value={value}
-        onChange={handleEditorChange}
-        height={`100vh`}
-        language="markdown"
-        theme={isLightTheme ? "light" : "dark"}
-        options={{ wordWrap: "on" }}
-      />
+      {isEditing ? (
+        <TinaField name="rawMarkdownBody" Component={Wysiwyg}>
+          <section
+            className="content"
+            dangerouslySetInnerHTML={{ __html: data.markdownRemark.html }}
+          ></section>
+        </TinaField>
+      ) : (
+        <Deck location={location} deckData={data.markdownRemark.html} />
+      )}
     </>
   )
 }
+// 1. Define the form config
+const HomePageForm = {
+  label: "Deck",
+  fields: [
+    {
+      label: "Title",
+      name: "frontmatter.title",
+      description: "Enter the title of the deck here",
+      component: "text",
+    },
+    {
+      label: "Slides",
+      name: "rawMarkdownBody",
+      description: "Enter the slides content here",
+      component: "textarea",
+    },
+  ],
+}
+
+export default inlineRemarkForm(HomePage, HomePageForm)
 
 export const pageQuery = graphql`
   query {
-    site {
-      siteMetadata {
+    markdownRemark {
+      frontmatter {
         title
       }
-    }
-    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
-      edges {
-        node {
-          excerpt
-          fields {
-            slug
-          }
-          frontmatter {
-            date(formatString: "MMMM DD, YYYY")
-            title
-            description
-          }
-        }
-      }
-    }
-    author: dataJson(pk: { eq: "author" }) {
-      title
-      author
-      description
-      siteUrl
-      social {
-        twitter
-      }
-      ###############
-      # Tina Fields #
-      ###############
-      fileRelativePath
-      rawJson
+      rawMarkdownBody
+      html
+      ...TinaRemark
     }
   }
 `
