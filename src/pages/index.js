@@ -3,18 +3,10 @@ import { graphql, navigate } from "gatsby"
 import React, { useState } from "react"
 
 import { ControlledEditor } from "@monaco-editor/react"
-import styled from "styled-components/macro"
-import { useHistory } from "react-router-dom"
 import { useLocalJsonForm, useGlobalJsonForm } from "gatsby-tinacms-json"
 import ControlsSection from "../components/Controls"
 
 // import qs from "query-string";
-
-const AppStyles = styled.div`
-  * {
-    box-sizing: border-box;
-  }
-`
 
 export default ({ data, location }) => {
   const [{ author, social }] = useLocalJsonForm(data.author, {
@@ -47,7 +39,7 @@ export default ({ data, location }) => {
   }
 
   return (
-    <AppStyles>
+    <>
       <ControlsSection
         setIsLightTheme={setIsLightTheme}
         handleBuild={handleBuild}
@@ -60,7 +52,7 @@ export default ({ data, location }) => {
         theme={isLightTheme ? "light" : "dark"}
         options={{ wordWrap: "on" }}
       />
-    </AppStyles>
+    </>
   )
 }
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import styled from "styled-components/macro"
 import { useEventListener } from "../utils/customHooks"
+import { useSwipeable } from "react-swipeable"
 
 const SlideStyles = styled.div`
   height: 100vh;
@@ -11,6 +12,7 @@ const SlideStyles = styled.div`
   place-items: center;
   font-size: 3em;
   font-family: "Sen", sans-serif;
+  user-select: none;
 `
 
 export default function Deck({ location, ...props }) {
@@ -20,23 +22,37 @@ export default function Deck({ location, ...props }) {
   const deckDataDecoded = decodeURI(deckData)
 
   const slides = deckDataDecoded.split("---")
+  console.log("⚡🚨: Deck -> slides", slides)
 
   const [slideIndex, setSlideIndex] = useState(0)
+
+  const stepBack = () => setSlideIndex(slideIndex - 1)
+  const stepForward = () => setSlideIndex(slideIndex + 1)
 
   const handleKeyDown = event => {
     console.log("⚡🚨: handleKeyDown -> event", event)
     if (event.key === "ArrowRight") {
-      setSlideIndex(slideIndex + 1)
+      stepForward()
     }
     if (event.key === "ArrowLeft") {
-      setSlideIndex(slideIndex - 1)
+      stepBack()
     }
   }
 
   useEventListener("keydown", handleKeyDown)
 
+  const swipeConfig = {
+    trackMouse: true, // track mouse input
+    preventDefaultTouchmoveEvent: true,
+  }
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: stepBack,
+    onSwipedRight: stepForward,
+    ...swipeConfig,
+  })
+
   return (
-    <div>
+    <div {...swipeHandlers}>
       <SlideStyles dangerouslySetInnerHTML={{ __html: slides[slideIndex] }} />
     </div>
   )
