@@ -4,8 +4,10 @@ import React, { useState } from "react"
 
 import { ControlledEditor } from "@monaco-editor/react"
 import styled from "styled-components/macro"
-import { Switch, Button } from "@material-ui/core"
-import useReactRouter from "use-react-router"
+import { useHistory, useLocation } from "react-router"
+import { useLocalJsonForm, useGlobalJsonForm } from "gatsby-tinacms-json"
+import ControlsSection from "../components/Controls"
+
 // import qs from "query-string";
 
 const CONTROLS_HEIGHT = 20
@@ -42,9 +44,24 @@ const AppStyles = styled.div`
 `
 
 export default ({ data }) => {
+  const [{ author, social }] = useLocalJsonForm(data.author, {
+    label: "Author bio",
+    fields: [
+      { name: "rawJson.author", label: "Author Name", component: "text" },
+
+      {
+        name: "rawJson.social",
+        label: "Social Info",
+        component: "group",
+        fields: [{ label: "@Twitter", name: "twitter", component: "text" }],
+      },
+    ],
+  })
   console.log("⚡🚨: data", data)
   // const parsed = qs.parse(window.location.search);
-  const { location, history } = useReactRouter()
+  // https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/api/hooks.md#uselocation
+  const location = useLocation()
+  const history = useHistory()
   // console.log("⚡🚨: parsed", parsed);
   const [value, setValue] = useState(decodeURI(location.search.slice(1))) // slice off the question mark
   console.log("⚡🚨: location", location.search)
@@ -76,27 +93,6 @@ export default ({ data }) => {
   )
 }
 
-const ThemeSwitch = ({ setIsLightTheme }) => (
-  <div className="themeSwitch">
-    <span className="dark">Dark</span>{" "}
-    <Switch onChange={() => setIsLightTheme(prev => !prev)} />{" "}
-    <span className="light">Light</span>
-  </div>
-)
-
-function ControlsSection({ setIsLightTheme, handleBuild }) {
-  return (
-    <div className="controls">
-      <ThemeSwitch setIsLightTheme={setIsLightTheme}></ThemeSwitch>
-      <div className="buildBtn">
-        <Button variant="contained" color="primary" onClick={handleBuild}>
-          Build
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 export const pageQuery = graphql`
   query {
     site {
@@ -109,7 +105,7 @@ export const pageQuery = graphql`
         node {
           excerpt
           fields {
-            slugz
+            slug
           }
           frontmatter {
             date(formatString: "MMMM DD, YYYY")
