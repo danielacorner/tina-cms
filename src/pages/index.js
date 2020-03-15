@@ -1,10 +1,10 @@
-import { graphql } from "gatsby"
+import { graphql, navigate } from "gatsby"
 
 import React, { useState } from "react"
 
 import { ControlledEditor } from "@monaco-editor/react"
 import styled from "styled-components/macro"
-import { useHistory, useLocation } from "react-router"
+import { useHistory } from "react-router-dom"
 import { useLocalJsonForm, useGlobalJsonForm } from "gatsby-tinacms-json"
 import ControlsSection from "../components/Controls"
 
@@ -43,7 +43,7 @@ const AppStyles = styled.div`
   }
 `
 
-export default ({ data }) => {
+export default ({ data, location }) => {
   const [{ author, social }] = useLocalJsonForm(data.author, {
     label: "Author bio",
     fields: [
@@ -60,19 +60,17 @@ export default ({ data }) => {
   console.log("⚡🚨: data", data)
   // const parsed = qs.parse(window.location.search);
   // https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/api/hooks.md#uselocation
-  const location = useLocation()
-  const history = useHistory()
   // console.log("⚡🚨: parsed", parsed);
   const [value, setValue] = useState(decodeURI(location.search.slice(1))) // slice off the question mark
-  console.log("⚡🚨: location", location.search)
+  console.log("⚡🚨: location", location)
   const [isLightTheme, setIsLightTheme] = useState(false)
 
   const handleEditorChange = (ev, value) => {
     setValue(value)
-    history.push(`/?${encodeURI(value)}`)
+    navigate(`/?${encodeURI(value)}`, { replace: true })
   }
   const handleBuild = () => {
-    history.push(`/deck/${encodeURI(value)}`)
+    navigate(`/deck/${encodeURI(value)}`)
   }
 
   return (
@@ -114,6 +112,20 @@ export const pageQuery = graphql`
           }
         }
       }
+    }
+    author: dataJson(pk: { eq: "author" }) {
+      title
+      author
+      description
+      siteUrl
+      social {
+        twitter
+      }
+      ###############
+      # Tina Fields #
+      ###############
+      fileRelativePath
+      rawJson
     }
   }
 `
