@@ -1,83 +1,133 @@
-import { graphql, navigate } from "gatsby"
+import { graphql, Link } from "gatsby"
 
-import React, { useState } from "react"
+import React from "react"
 
-import { ControlledEditor } from "@monaco-editor/react"
 import { useLocalJsonForm } from "gatsby-tinacms-json"
-import ControlsSection from "../components/Controls"
-import Deck from "../components/Deck"
-import { Wysiwyg } from "@tinacms/fields"
-import { TinaField } from "@tinacms/form-builder"
-import { inlineRemarkForm } from "gatsby-tinacms-remark"
+import {
+  useLocalRemarkForm,
+  RemarkCreatorPlugin,
+  DeleteAction,
+} from "gatsby-tinacms-remark"
+import { withPlugin } from "tinacms"
+import styled from "styled-components/macro"
+import { Divider, Button } from "@material-ui/core"
+
+const DeckListItem = ({ title }) => (
+  <Button>
+    <li>{title}</li>
+  </Button>
+)
+const IndexStyles = styled.div`
+  a {
+    text-decoration: none;
+    box-shadow: none;
+  }
+  button {
+    width: 100%;
+    text-transform: none;
+  }
+  li {
+    list-style: none;
+    margin: 0;
+    padding: 1em;
+  }
+`
 
 function HomePage({ data, location, isEditing, setIsEditing }) {
-  console.log("⚡🚨: data", data)
+  console.log("⚡🚨: HomePage -> data", data)
   // const parsed = qs.parse(window.location.search);
   // https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/api/hooks.md#uselocation
   // console.log("⚡🚨: parsed", parsed);
-  const [value, setValue] = useState(decodeURI(location.search.slice(1))) // slice off the question mark
-
-  const handleEditorChange = (ev, value) => {
-    setValue(value)
-    navigate(`/?${encodeURI(value)}`, { replace: true })
-  }
-  const handlePreview = () => {
-    navigate(`/deck-preview?${encodeURI(value)}`)
-  }
   const handleBuild = () => {
     console.log("TODO")
   }
+  // const AllDecksForm = {
+  //   label: "Decks",
+  //   fields: [
+  //     {
+  //       label: "Title",
+  //       name: "frontmatter.title",
+  //       description: "Enter the title of the deck here",
+  //       component: "text",
+  //     },
+  //     {
+  //       label: "Slides",
+  //       name: "rawMarkdownBody",
+  //       description: "Enter the slides content here",
+  //       component: "textarea",
+  //     },
+  //   ],
+  // }
+
+  // const [allMarkdownRemark] = useLocalRemarkForm(data.allMarkdownRemark)
+  // const [allMarkdownRemark] = useLocalRemarkForm(
+  //   data.allMarkdownRemark,
+  //   AllDecksForm
+  // )
+
+  const allDecks = data.allMarkdownRemark.nodes
+  console.log("⚡🚨: HomePage -> allDecks", allDecks)
 
   return (
-    <>
-      <ControlsSection
-        handleEdit={() => setIsEditing(p => !p)}
-        isEditing={isEditing}
-        handleBuild={handleBuild}
-      ></ControlsSection>
-      {isEditing ? (
-        <TinaField name="rawMarkdownBody" Component={Wysiwyg}>
-          <section
-            className="content"
-            dangerouslySetInnerHTML={{ __html: data.markdownRemark.html }}
-          ></section>
-        </TinaField>
-      ) : (
-        <Deck location={location} deckData={data.markdownRemark.html} />
-      )}
-    </>
+    <IndexStyles>
+      <ul>
+        {allDecks.map(deck => {
+          const {
+            fileRelativePath,
+            frontmatter: { title },
+          } = deck
+          const deckPath = fileRelativePath.split("/")[4]
+          console.log("⚡🚨: HomePage -> deckPath", deckPath)
+          return (
+            <>
+              <Link to={`/${deckPath}`}>
+                <DeckListItem key={title} title={title} />
+              </Link>
+              <Divider />
+            </>
+          )
+        })}
+      </ul>
+    </IndexStyles>
   )
 }
-// 1. Define the form config
-const HomePageForm = {
-  label: "Deck",
-  fields: [
-    {
-      label: "Title",
-      name: "frontmatter.title",
-      description: "Enter the title of the deck here",
-      component: "text",
-    },
-    {
-      label: "Slides",
-      name: "rawMarkdownBody",
-      description: "Enter the slides content here",
-      component: "textarea",
-    },
-  ],
-}
 
-export default inlineRemarkForm(HomePage, HomePageForm)
+const CreateDeckPlugin = new RemarkCreatorPlugin({
+  label: "Create Deck",
+  filename: form => {
+    const slug = form.title.replace(/\s+/, "-").toLowerCase()
+
+    return `content/blog/${slug}/index.md`
+  },
+  frontmatter: form => ({
+    title: form.title,
+    date: new Date(),
+  }),
+  actions: [DeleteAction],
+  fields: [
+    { name: "title", label: "Title", component: "text", required: true },
+  ],
+  body: form => `${form.title}
+  ---
+  This is a new slide.
+  ---
+  this is another slide!`,
+})
+
+export default withPlugin(HomePage, CreateDeckPlugin)
 
 export const pageQuery = graphql`
-  query {
-    markdownRemark {
-      frontmatter {
-        title
+  query AllDecksQuery {
+    allMarkdownRemark {
+      nodes {
+        ...TinaRemark
+        frontmatter {
+          title
+        }
+        rawMarkdownBody
+        html
+        fileRelativePath
       }
-      rawMarkdownBody
-      html
-      ...TinaRemark
     }
   }
 `
